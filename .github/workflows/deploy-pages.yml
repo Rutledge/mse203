@@ -25,6 +25,6 @@ jobs:
           git checkout --orphan gh-pages
           git rm -rf --cached . >/dev/null
           touch .nojekyll
-          git add -f index.html .nojekyll
+          git add -f index.html .nojekyll slides
           git commit -m "Deploy site from ${GITHUB_SHA::7}"
           git push -f origin gh-pages

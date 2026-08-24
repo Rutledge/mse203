@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MS&E 203 — Week 1</title>
+<style>
+  :root{
+    --ink:#12283b;          /* deep slate-navy for text */
+    --ink-soft:#3f5a70;     /* secondary text */
+    --sky:#4a90c2;          /* primary accent */
+    --sky-deep:#2f6d9e;     /* stronger accent */
+    --sky-wash:#eaf3fa;     /* pale panel fill */
+    --sky-line:#d3e6f3;     /* hairline */
+    --paper:#ffffff;
+    --paper-tint:#f6fafd;   /* faint page tint */
+    --gold:#c98a3c;         /* rare secondary accent for warnings */
+    --gold-wash:#faf1e2;
+    --maxw:1080px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--paper-tint);
+    color:var(--ink);
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow:hidden;
+  }
+  /* ---------- deck mechanics ---------- */
+  .deck{height:100vh;width:100vw;position:relative;}
+  .slide{
+    position:absolute;inset:0;
+    display:none;
+    padding:6vh 8vw;
+    flex-direction:column;
+    justify-content:center;
+    background:
+      radial-gradient(120% 100% at 100% 0%, var(--paper-tint) 0%, var(--paper) 55%);
+    animation:fade .45s ease;
+  }
+  .slide.active{display:flex;}
+  @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  @media (prefers-reduced-motion:reduce){
+    .slide{animation:none;}
+  }
+
+  /* ---------- shared type ---------- */
+  .eyebrow{
+    font-size:clamp(.72rem,1.1vw,.9rem);
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--sky-deep);
+    font-weight:700;
+    margin-bottom:2.2vh;
+  }
+  h1{
+    font-size:clamp(2.4rem,6vw,4.6rem);
+    line-height:1.02;
+    font-weight:800;
+    letter-spacing:-.02em;
+    color:var(--ink);
+  }
+  h2{
+    font-size:clamp(1.8rem,4.2vw,3rem);
+    line-height:1.06;
+    font-weight:800;
+    letter-spacing:-.015em;
+    margin-bottom:3.2vh;
+  }
+  .lead{
+    font-size:clamp(1.15rem,2.3vw,1.9rem);
+    line-height:1.4;
+    color:var(--ink-soft);
+    max-width:22ch;
+    font-weight:500;
+  }
+  .big{
+    font-size:clamp(1.4rem,2.7vw,2.3rem);
+    line-height:1.32;
+    font-weight:600;
+    max-width:26ch;
+  }
+  p.body{
+    font-size:clamp(1.05rem,1.7vw,1.4rem);
+    line-height:1.5;
+    color:var(--ink-soft);
+    max-width:40ch;
+  }
+  strong{color:var(--ink);font-weight:750;}
+  em{font-style:italic;color:var(--sky-deep);}
+
+  /* ---------- title slide ---------- */
+  .title-slide{justify-content:center;}
+  .title-slide h1{margin-bottom:2.6vh;}
+  .title-course{
+    font-size:clamp(1rem,1.8vw,1.35rem);
+    font-weight:700;
+    letter-spacing:.04em;
+    color:var(--sky-deep);
+    margin-bottom:1vh;
+  }
+  .title-sub{
+    font-size:clamp(1.05rem,2vw,1.5rem);
+    color:var(--ink-soft);
+    font-weight:500;
+    margin-bottom:5vh;
+  }
+  .title-meta{
+    font-size:clamp(.9rem,1.4vw,1.1rem);
+    color:var(--ink-soft);
+    line-height:1.7;
+    border-top:2px solid var(--sky-line);
+    padding-top:2.4vh;
+    max-width:34ch;
+  }
+  .title-meta b{color:var(--ink);font-weight:700;}
+
+  /* ---------- agenda / timeline ---------- */
+  .timeline{display:flex;flex-direction:column;gap:1.6vh;margin-top:1vh;}
+  .t-row{display:flex;align-items:baseline;gap:1.4rem;}
+  .t-dur{
+    flex:0 0 auto;width:5.5rem;text-align:right;
+    font-weight:800;color:var(--sky-deep);
+    font-size:clamp(1rem,1.7vw,1.35rem);
+    font-variant-numeric:tabular-nums;
+  }
+  .t-item{
+    font-size:clamp(1.05rem,1.9vw,1.5rem);
+    color:var(--ink);font-weight:500;
+    border-left:2px solid var(--sky-line);
+    padding-left:1.4rem;
+  }
+  .t-row.pause .t-item{color:var(--ink-soft);font-style:italic;border-left-color:var(--sky);}
+
+  /* ---------- generic stacked list ---------- */
+  .stack{display:flex;flex-direction:column;gap:2.4vh;margin-top:1vh;}
+  .stack.tight{gap:1.5vh;}
+  .item-title{
+    font-size:clamp(1.15rem,2vw,1.6rem);
+    font-weight:750;color:var(--ink);
+  }
+  .item-desc{
+    font-size:clamp(.98rem,1.5vw,1.25rem);
+    color:var(--ink-soft);line-height:1.4;
+    max-width:46ch;
+  }
+  .item-title .tag{color:var(--sky-deep);}
+
+  /* ---------- two-column compare ---------- */
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:2.4rem;margin-top:1vh;}
+  .col{
+    background:var(--paper);
+    border:1px solid var(--sky-line);
+    border-radius:14px;
+    padding:2.6vh 2vw;
+  }
+  .col.ai{background:var(--sky-wash);border-color:var(--sky-line);}
+  .col h3{
+    font-size:clamp(1.05rem,1.7vw,1.4rem);
+    color:var(--sky-deep);font-weight:800;
+    margin-bottom:1.6vh;letter-spacing:.01em;
+  }
+  .col p{
+    font-size:clamp(.95rem,1.45vw,1.2rem);
+    line-height:1.5;color:var(--ink-soft);
+    margin-bottom:1vh;
+  }
+  .col p:last-child{margin-bottom:0;}
+
+  /* ---------- two-example cards ---------- */
+  .examples{display:grid;grid-template-columns:1fr 1fr;gap:2.4rem;margin-top:2vh;}
+  .ex{
+    background:var(--paper);
+    border:1px solid var(--sky-line);
+    border-radius:14px;padding:3vh 2vw;
+  }
+  .ex .label{
+    font-weight:800;color:var(--sky-deep);
+    font-size:clamp(1.05rem,1.7vw,1.4rem);
+    margin-bottom:1.4vh;
+  }
+  .ex p{font-size:clamp(.95rem,1.45vw,1.2rem);line-height:1.5;color:var(--ink-soft);}
+
+  /* ---------- number grid (ten weeks) ---------- */
+  .weeks{display:grid;grid-template-columns:1fr 1fr;gap:1.1vh 3rem;margin-top:1vh;}
+  .wk{display:flex;align-items:baseline;gap:1rem;}
+  .wk .n{
+    flex:0 0 auto;width:2.2rem;text-align:right;
+    font-weight:800;color:var(--sky);
+    font-variant-numeric:tabular-nums;
+    font-size:clamp(1rem,1.6vw,1.3rem);
+  }
+  .wk .l{font-size:clamp(.95rem,1.45vw,1.2rem);color:var(--ink);}
+  .wk .l .d{color:var(--sky-deep);font-style:italic;}
+
+  /* ---------- grading rows ---------- */
+  .grade{display:flex;flex-direction:column;gap:1.8vh;margin-top:1vh;}
+  .g-row{display:flex;align-items:baseline;gap:1.6rem;}
+  .g-pct{
+    flex:0 0 auto;width:4.5rem;
+    font-weight:800;color:var(--sky-deep);
+    font-size:clamp(1.4rem,2.6vw,2.2rem);
+    font-variant-numeric:tabular-nums;
+  }
+  .g-txt{font-size:clamp(1rem,1.6vw,1.35rem);color:var(--ink);line-height:1.4;}
+  .g-txt small{display:block;color:var(--ink-soft);font-size:.82em;margin-top:.2rem;}
+  .footnote{
+    margin-top:3vh;font-size:clamp(.9rem,1.3vw,1.1rem);
+    color:var(--ink-soft);line-height:1.5;max-width:52ch;
+  }
+
+  /* ---------- callout / warning slide ---------- */
+  .callout{
+    background:var(--gold-wash);
+    border:1px solid #efdcbf;
+    border-left:5px solid var(--gold);
+    border-radius:12px;
+    padding:2.4vh 2vw;margin-top:2.4vh;
+    font-size:clamp(1.05rem,1.8vw,1.45rem);
+    line-height:1.45;color:var(--ink);font-weight:600;
+    max-width:44ch;
+  }
+
+  /* ---------- fit spectrum ---------- */
+  .spectrum-bar{
+    height:12px;border-radius:6px;margin:3vh 0 3vh;
+    background:linear-gradient(90deg,var(--sky-deep),var(--sky) 50%,#cddced);
+  }
+  .fit{display:flex;flex-direction:column;gap:2.2vh;}
+  .fit-row{display:flex;gap:1.2rem;align-items:baseline;}
+  .fit-k{
+    flex:0 0 auto;width:12rem;font-weight:800;
+    font-size:clamp(1rem,1.6vw,1.35rem);color:var(--sky-deep);
+  }
+  .fit-v{font-size:clamp(.98rem,1.5vw,1.25rem);color:var(--ink-soft);line-height:1.4;max-width:40ch;}
+
+  /* ---------- product chips ---------- */
+  .chips{display:flex;flex-wrap:wrap;gap:1.2rem;margin-top:2vh;max-width:44ch;}
+  .chip{
+    background:var(--paper);border:1px solid var(--sky-line);
+    border-radius:999px;padding:1.1rem 1.8rem;
+    font-size:clamp(1rem,1.6vw,1.35rem);font-weight:600;color:var(--ink);
+  }
+
+  /* ---------- instructors ---------- */
+  .people{display:flex;flex-direction:column;gap:2.6vh;margin-top:1vh;}
+  .person .nm{font-size:clamp(1.2rem,2.1vw,1.7rem);font-weight:800;color:var(--ink);}
+  .person .rl{font-size:clamp(.95rem,1.5vw,1.25rem);color:var(--ink-soft);margin-top:.3rem;}
+
+  /* ---------- reading / do ---------- */
+  .twohalf{display:grid;grid-template-columns:1.4fr 1fr;gap:3rem;margin-top:1vh;}
+  .half h3{
+    font-size:clamp(1rem,1.6vw,1.35rem);color:var(--sky-deep);
+    font-weight:800;margin-bottom:1.6vh;letter-spacing:.04em;text-transform:uppercase;
+  }
+  .half p{font-size:clamp(.95rem,1.45vw,1.2rem);line-height:1.55;color:var(--ink-soft);margin-bottom:1vh;}
+  .half p em{color:var(--sky-deep);}
+
+  /* section divider */
+  .divider{align-items:flex-start;justify-content:center;
+    background:linear-gradient(135deg,var(--sky-wash),var(--paper));}
+  .divider h1{max-width:16ch;}
+  .divider .eyebrow{color:var(--sky);}
+
+  /* closing */
+  .closing{align-items:center;justify-content:center;text-align:center;
+    background:linear-gradient(135deg,var(--sky-wash),var(--paper));}
+  .closing h1{margin-bottom:2vh;}
+  .closing .url{
+    font-size:clamp(1.1rem,2vw,1.6rem);color:var(--sky-deep);font-weight:700;
+  }
+
+  /* ---------- chrome: progress + counter + notes ---------- */
+  .chrome{
+    position:fixed;left:0;right:0;bottom:0;
+    display:flex;align-items:center;gap:1rem;
+    padding:.7rem 1.4rem;z-index:20;
+    font-size:.8rem;color:var(--ink-soft);
+    pointer-events:none;
+  }
+  .progress{
+    position:fixed;top:0;left:0;height:3px;background:var(--sky);
+    z-index:30;transition:width .3s ease;
+  }
+  .counter{font-variant-numeric:tabular-nums;font-weight:600;letter-spacing:.04em;}
+  .hint{opacity:.7;}
+  .notes-toggle{
+    position:fixed;top:.8rem;right:1rem;z-index:30;
+    background:var(--paper);border:1px solid var(--sky-line);
+    color:var(--ink-soft);border-radius:8px;padding:.4rem .7rem;
+    font-size:.75rem;font-weight:600;cursor:pointer;font-family:inherit;
+  }
+  .notes-toggle:hover{border-color:var(--sky);color:var(--sky-deep);}
+  .notes{
+    position:fixed;left:0;right:0;bottom:0;z-index:25;
+    background:var(--ink);color:#e8f1f8;
+    padding:1.4rem 8vw 2rem;
+    font-size:.98rem;line-height:1.5;
+    transform:translateY(100%);transition:transform .3s ease;
+    max-height:42vh;overflow-y:auto;
+  }
+  .notes.show{transform:translateY(0);}
+  .notes .nlabel{
+    font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--sky);font-weight:700;margin-bottom:.6rem;
+  }
+  .notes ul{margin:.5rem 0 0 1.1rem;}
+  .notes li{margin-bottom:.35rem;}
+  :focus-visible{outline:3px solid var(--sky-deep);outline-offset:3px;}
+
+  @media (max-width:760px){
+    .cols,.examples,.weeks,.twohalf{grid-template-columns:1fr;}
+    .slide{padding:8vh 7vw;}
+    .fit-k{width:auto;}
+  }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<button class="notes-toggle" id="notesToggle">Speaker notes (N)</button>
+<div class="deck" id="deck">
+
+  <!-- 1 TITLE -->
+  <section class="slide title-slide active"
+    data-notes="Thirty seconds on the title. Let the room settle; don't read the slide.">
+    <div class="title-course">MS&amp;E 203 · Stanford · September 23, 2026</div>
+    <h1>Why AI Products<br>Are Different</h1>
+    <div class="title-sub">Building and Evaluating AI Products and Agents</div>
+    <div class="title-meta">
+      <b>Madeleine Udell</b> · <b>Darius Emrani</b> · <b>Pasha Nahass</b><br>
+      Week 1 of 10
+    </div>
+  </section>
+
+  <!-- 2 TODAY -->
+  <section class="slide"
+    data-notes="Thirty seconds. Don't narrate the agenda, just let them see the shape of the session.">
+    <div class="eyebrow">Today</div>
+    <div class="timeline">
+      <div class="t-row"><div class="t-dur">35 min</div><div class="t-item">What this course is, and how it works</div></div>
+      <div class="t-row"><div class="t-dur">10 min</div><div class="t-item">Who we are</div></div>
+      <div class="t-row"><div class="t-dur">55 min</div><div class="t-item">Lecture: Why AI products are different</div></div>
+      <div class="t-row pause"><div class="t-dur">10 min</div><div class="t-item">Break</div></div>
+      <div class="t-row"><div class="t-dur">50 min</div><div class="t-item">Lab: The AI-fit exercise</div></div>
+    </div>
+  </section>
+
+  <!-- 3 ONE LINE -->
+  <section class="slide"
+    data-notes="Most courses here teach either the models or the product management. This one makes you do both at once, on something real. You pick a problem, argue that AI actually fits it, build it, then show evidence about whether it's good enough for real users. Demo Day puts that in front of outside judges, where 'it worked when I tried it' doesn't hold up.">
+    <div class="eyebrow">The course in one line</div>
+    <p class="big">You'll build a real AI product end-to-end, evaluate it rigorously, and present it to outside judges on Demo Day.</p>
+    <div class="stack tight" style="margin-top:4vh;">
+      <div class="wk"><span class="n">1–2</span><span class="l">Figure out what's worth building</span></div>
+      <div class="wk"><span class="n">3–6</span><span class="l">Build it and measure whether it's any good</span></div>
+      <div class="wk"><span class="n">7–10</span><span class="l">Harden it and ship</span></div>
+    </div>
+  </section>
+
+  <!-- 4 FOUR SKILLS -->
+  <section class="slide"
+    data-notes="These are the four learning goals from the syllabus. Lead with the top line so the four skills read as parts of one thing, not a checklist. Read them fast; the next slide does the work.">
+    <div class="eyebrow">What you'll be able to do</div>
+    <h2 style="max-width:20ch;">Build AI products and agents that hold up in front of real users.</h2>
+    <div class="stack tight">
+      <div><span class="item-title"><span class="tag">Diagnose AI-fit</span></span> <span class="item-desc">— when AI is the right tool, when it's a bad one, when it's overkill.</span></div>
+      <div><span class="item-title"><span class="tag">Evaluate rigorously</span></span> <span class="item-desc">— design evals, and know what they miss.</span></div>
+      <div><span class="item-title"><span class="tag">Say what you're optimizing for</span></span> <span class="item-desc">— turn a fuzzy goal into a number you can move.</span></div>
+      <div><span class="item-title"><span class="tag">Plan for failure</span></span> <span class="item-desc">— find how the system breaks and build the guardrails.</span></div>
+    </div>
+  </section>
+
+  <!-- 5 TWO EXAMPLES -->
+  <section class="slide"
+    data-notes="Copilot makes the measurable-criteria idea concrete. Someone had to turn 'help engineers write code faster' into something they could watch move, and they picked suggestion acceptance rate. Roughly a third of suggestions get taken, and that's the number they track. Air Canada is the failure case: Jake Moffatt booked full-fare flights right after his grandmother died because the bot told him he could apply for the bereavement rate retroactively within 90 days. The real policy had no retroactive path. Air Canada argued the bot was a separate entity it wasn't responsible for; the tribunal disagreed and awarded Moffatt about CAD 800. No one wrote that bug and there was no line of code to fix. Both come back all quarter.">
+    <div class="eyebrow">Two examples to hold onto</div>
+    <div class="examples">
+      <div class="ex">
+        <div class="label">Copilot: ~30%</div>
+        <p>GitHub measures Copilot by how often developers accept its suggestions. It runs around 30%, and they use that number to decide whether the product is working.</p>
+      </div>
+      <div class="ex">
+        <div class="label">Air Canada: the bot the airline had to honor</div>
+        <p>Its support bot told a customer he could claim a bereavement discount after flying. The real policy didn't allow that. A tribunal made Air Canada pay the difference anyway.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 TWO PHASES -->
+  <section class="slide"
+    data-notes="Point at the shape: solo for three weeks, then teams for the rest. Deliverables start next week.">
+    <div class="eyebrow">Two phases, ten weeks</div>
+    <div class="stack">
+      <div>
+        <div class="item-title">Weeks 1–3 · <span class="tag">Individual</span></div>
+        <div class="item-desc">Each of you runs a compressed product cycle solo.</div>
+      </div>
+      <div>
+        <div class="item-title">Weeks 4–10 · <span class="tag">Team</span></div>
+        <div class="item-desc">Teams of four. Three gates. Demo Day.</div>
+      </div>
+      <div>
+        <div class="item-title">The weekly rhythm</div>
+        <div class="item-desc">Lecture and reading discussion, then lab: workshop, project work, or guest Q&amp;A. Deliverables due at noon the day of class.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 TEN WEEKS -->
+  <section class="slide"
+    data-notes="Don't walk all ten. Point at the three gates and the fact that deliverables start next week.">
+    <div class="eyebrow">The ten weeks</div>
+    <div class="weeks">
+      <div class="wk"><span class="n">1</span><span class="l">Why AI products are different</span></div>
+      <div class="wk"><span class="n">2</span><span class="l">Product discovery <span class="d">· discovery brief</span></span></div>
+      <div class="wk"><span class="n">3</span><span class="l">Evals fundamentals <span class="d">· prototype</span></span></div>
+      <div class="wk"><span class="n">4</span><span class="l">Improving the product <span class="d">· Gate 1</span></span></div>
+      <div class="wk"><span class="n">5</span><span class="l">Multi-turn eval and simulation</span></div>
+      <div class="wk"><span class="n">6</span><span class="l">User research beyond the metrics</span></div>
+      <div class="wk"><span class="n">7</span><span class="l">When AI products fail <span class="d">· peer feedback</span></span></div>
+      <div class="wk"><span class="n">8</span><span class="l">Responsible AI <span class="d">· Gate 2</span></span></div>
+      <div class="wk"><span class="n">9</span><span class="l">Voice and multimodal</span></div>
+      <div class="wk"><span class="n">10</span><span class="l">Demo Day <span class="d">· Gate 3</span></span></div>
+    </div>
+  </section>
+
+  <!-- 8 GRADING -->
+  <section class="slide"
+    data-notes="Walk the three weights. The peer-eval adjustment on project grades is the thing students miss: your teammates' rating moves your individual score.">
+    <div class="eyebrow">Grading</div>
+    <div class="grade">
+      <div class="g-row"><div class="g-pct">10%</div><div class="g-txt">Individual work<small>Discovery brief, working prototype</small></div></div>
+      <div class="g-row"><div class="g-pct">60%</div><div class="g-txt">Team project<small>Proposal 10% · midterm 15% · final &amp; Demo Day 35%</small></div></div>
+      <div class="g-row"><div class="g-pct">30%</div><div class="g-txt">Participation<small>Discussion, pop quizzes, peer review</small></div></div>
+    </div>
+    <p class="footnote">Project work is graded on problem and user understanding, product and technical decisions (including responsible AI), working product quality, and evaluation rigor. Project grades are individual — a peer evaluation from your teammates adjusts your score.</p>
+  </section>
+
+  <!-- 9 PARTICIPATION -->
+  <section class="slide"
+    data-notes="Say this plainly once and move on. Don't soften it and don't apologize for it. Students who hear it clearly today don't argue about it in Week 9. The quizzes are the thing to stress: random timing, every session, so there's no safe class to skip. Graded on engagement means a wrong answer with real reasoning still counts. No quiz today — just tell them the quizzes start next week.">
+    <div class="eyebrow">Participation is 30% — read this slide</div>
+    <div class="stack tight">
+      <div><span class="item-title"><span class="tag">Discussion</span></span> <span class="item-desc">— showing up and engaging in class.</span></div>
+      <div><span class="item-title"><span class="tag">Pop quizzes</span></span> <span class="item-desc">— random points every session, graded on engagement, not right answers. They double as attendance.</span></div>
+      <div><span class="item-title"><span class="tag">Peer review</span></span> <span class="item-desc">— you use two other teams' products and write a short structured review of each.</span></div>
+    </div>
+    <div class="callout">Up to 2 unexcused absences. Earn at least 50% of participation points, or you fail the course — whatever your project score.</div>
+  </section>
+
+  <!-- 10 LOGISTICS -->
+  <section class="slide"
+    data-notes="Deadlines, the one free extension, OAE letters early, Honor Code. Then the onboarding modules — everyone gets through 0–3 by Week 3. Take the standard Q&amp;A here (stats background, team timing, peer eval, which coding tool).">
+    <div class="eyebrow">Logistics</div>
+    <div class="stack tight">
+      <div><span class="item-title">Deadlines</span> <span class="item-desc">— noon, day of class. One 48-hour extension, no questions. Then 10% per day.</span></div>
+      <div><span class="item-title">OAE letters</span> <span class="item-desc">— send them to us early.</span></div>
+      <div><span class="item-title">Honor Code</span> <span class="item-desc">— AI tools encouraged. The thinking has to be yours.</span></div>
+    </div>
+    <div style="margin-top:3vh;">
+      <div class="eyebrow" style="margin-bottom:1.4vh;">Onboarding modules — done by Week 3</div>
+      <p class="body" style="max-width:52ch;"><strong>0</strong> How LLMs actually work &nbsp;·&nbsp; <strong>1</strong> Git and AI coding tools &nbsp;·&nbsp; <strong>2</strong> APIs, data, hosting &nbsp;·&nbsp; <strong>3</strong> Stats refresher</p>
+    </div>
+  </section>
+
+  <!-- 11 INSTRUCTORS -->
+  <section class="slide"
+    data-notes="Three minutes each, framed around what you can help them with rather than career history. Madeleine on evaluation methodology and whether a result is real. Darius on evaluation and simulation in industry, with Waymo as the anchor for probabilistic systems that have physical consequences. Pasha on shipping AI products at consumer scale and the tradeoff calls made under real constraints.">
+    <div class="eyebrow">Who we are</div>
+    <div class="people">
+      <div class="person"><div class="nm">Madeleine Udell</div><div class="rl">Assistant Professor, Management Science &amp; Engineering, Stanford</div></div>
+      <div class="person"><div class="nm">Darius Emrani</div><div class="rl">CEO, Scorecard AI · ex-Waymo simulation and evaluation</div></div>
+      <div class="person"><div class="nm">Pasha Nahass</div><div class="rl">Product Lead, Google DeepMind, Gemini App</div></div>
+    </div>
+  </section>
+
+  <!-- 12 DIVIDER -->
+  <section class="slide divider"
+    data-notes="Transition into the lecture. This is the core idea of the whole course.">
+    <div class="eyebrow">Part two</div>
+    <h1>Why AI products<br>are different</h1>
+  </section>
+
+  <!-- 13 COMPARE -->
+  <section class="slide"
+    data-notes="The way in is the testing question. In traditional software you write a test that asserts an exact output, and it passes or fails. Ask the room what a unit test looks like for 'summarize this meeting.' There's no assertion to write, and most of the course lives in that gap.">
+    <div class="eyebrow">The core shift</div>
+    <div class="cols">
+      <div class="col">
+        <h3>Traditional software</h3>
+        <p>Same input, same output.</p>
+        <p>You can test it exhaustively, and a failure means there's a bug to find.</p>
+        <p>"Correct" is well defined.</p>
+      </div>
+      <div class="col ai">
+        <h3>AI products</h3>
+        <p>The same input can give a different answer each time.</p>
+        <p>You can't enumerate the cases, and a failure often isn't traceable to any one bug.</p>
+        <p>"Correct" is frequently a judgment call.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 14 TRADEOFFS -->
+  <section class="slide"
+    data-notes="Non-determinism breaks the assumption under most of software engineering; a bug you saw once may not reproduce. Latency is a quality dimension here — a better answer that lands after the user moved on is worse. Quality often can't be defined cleanly; Week 3 is about that. Cost scales with usage. Say the 'this list will change' line once, don't dwell.">
+    <div class="eyebrow">The tradeoffs that matter right now</div>
+    <div class="stack tight">
+      <div><span class="item-title"><span class="tag">Non-determinism</span></span> <span class="item-desc">— the same input can give you a different answer twice in a row.</span></div>
+      <div><span class="item-title"><span class="tag">Latency</span></span> <span class="item-desc">— sometimes a fast okay answer beats a slow great one.</span></div>
+      <div><span class="item-title"><span class="tag">Quality</span></span> <span class="item-desc">— often subjective, and hard to even define.</span></div>
+      <div><span class="item-title"><span class="tag">Cost</span></span> <span class="item-desc">— you pay per call, and it adds up as you scale.</span></div>
+    </div>
+    <p class="footnote">This is today's list. It'll look different in a few years as models and infrastructure change. Naming your tradeoffs out loud is the part that lasts.</p>
+  </section>
+
+  <!-- 15 SCULLEY -->
+  <section class="slide"
+    data-notes="The famous figure is a tiny ML box surrounded by infrastructure. CACE means inputs aren't independent — change one thing and behavior moves where you weren't looking, which is why they'll need regression evals, not spot checks. Feedback loops: outputs end up in future inputs. The paper is from 2015 and the asymmetry is worse now — a weekend prototype is trivial, a production-trustworthy system is not.">
+    <div class="eyebrow">Sculley et al. · Hidden Technical Debt</div>
+    <div class="stack tight">
+      <p class="body" style="max-width:50ch;">In the diagram from this paper, the ML model is a tiny box surrounded by everything else.</p>
+      <p class="body" style="max-width:50ch;">The real cost is in that everything else: data pipelines, configuration, monitoring, glue code.</p>
+      <p class="body" style="max-width:50ch;"><strong>CACE</strong> — Changing Anything Changes Everything. Swap a model or tweak a prompt and behavior shifts in places you weren't looking.</p>
+      <p class="body" style="max-width:50ch;">These systems are quick to prototype and slow to keep running.</p>
+    </div>
+  </section>
+
+  <!-- 16 TAKEAWAY -->
+  <section class="slide divider"
+    data-notes="This is the thesis of the course. The numbers are illustrative, not from the paper — they make the proportion vivid.">
+    <div class="eyebrow">The takeaway</div>
+    <h1 style="max-width:18ch;">The model is maybe 10% of the work.</h1>
+    <p class="big" style="margin-top:3vh;">The other 90% is evals, monitoring, and system design. That's what we spend ten weeks on.</p>
+  </section>
+
+  <!-- 17 YAN -->
+  <section class="slide"
+    data-notes="Don't teach each pattern. Establish that the tradeoffs have known mitigations, name where each shows up later in the quarter, move on.">
+    <div class="eyebrow">Yan · Patterns for LLM systems</div>
+    <p class="body" style="max-width:48ch;margin-bottom:2.4vh;">Yan catalogs the moves people actually use to make these systems dependable enough to ship. A few we'll come back to:</p>
+    <div class="stack tight">
+      <div><span class="item-title"><span class="tag">Evals</span></span> <span class="item-desc">— how you know it's working <em>(Week 3)</em>.</span></div>
+      <div><span class="item-title"><span class="tag">Retrieval</span></span> <span class="item-desc">— pull in real data so the model isn't making things up.</span></div>
+      <div><span class="item-title"><span class="tag">Guardrails</span></span> <span class="item-desc">— limit what it's allowed to output.</span></div>
+      <div><span class="item-title"><span class="tag">Caching</span></span> <span class="item-desc">— cuts both latency and cost.</span></div>
+      <div><span class="item-title"><span class="tag">User feedback</span></span> <span class="item-desc">— routes real signal back into the system.</span></div>
+    </div>
+  </section>
+
+  <!-- 18 TOGETHER -->
+  <section class="slide"
+    data-notes="Tie the two readings together and point forward. Sculley diagnoses, Yan equips, the course is about choosing and proving.">
+    <div class="eyebrow">Putting them together</div>
+    <p class="big" style="max-width:30ch;">Sculley tells you why these systems are hard and where the cost hides. Yan gives you the moves for dealing with it.</p>
+    <p class="body" style="max-width:44ch;margin-top:3vh;">What this course adds: picking the right move for your situation, and showing evidence it actually helped.</p>
+  </section>
+
+  <!-- 19 DISCUSSION -->
+  <section class="slide divider"
+    data-notes="Backup prompts if the room is quiet: name a product where you'd rather have a fast okay answer than a slow great one, and one where the reverse holds; has an AI product been confidently wrong to you, and how did you find out; what would a unit test for a chatbot assert. Push past 'it hallucinated' — ask what the system should have done: caught it, flagged it, refused, or handed off to a human.">
+    <div class="eyebrow">Discussion</div>
+    <h1 style="max-width:20ch;">Where have you seen a probabilistic system fail?</h1>
+    <p class="big" style="margin-top:3vh;">In a product you actually use — and what tradeoff was being made?</p>
+  </section>
+
+  <!-- 20 LAB SETUP -->
+  <section class="slide divider"
+    data-notes="Break was before this. Form groups of four. Each group places products on the spectrum and names the single most important tradeoff, then reports out.">
+    <div class="eyebrow">Lab · after the break</div>
+    <h1 style="max-width:16ch;">The AI-fit exercise</h1>
+    <p class="big" style="margin-top:3vh;">In groups of four: place each product on the fit spectrum, and name the single most important tradeoff.</p>
+  </section>
+
+  <!-- 21 SPECTRUM -->
+  <section class="slide"
+    data-notes="Give each group three or four products, making sure the contested two (chatbot, notetaker) are covered everywhere.">
+    <div class="eyebrow">The fit spectrum</div>
+    <div class="spectrum-bar"></div>
+    <div class="fit">
+      <div class="fit-row"><div class="fit-k">Strong fit</div><div class="fit-v">Rules can't do the job, and it's okay when the AI is occasionally wrong.</div></div>
+      <div class="fit-row"><div class="fit-k">Depends on execution</div><div class="fit-v">Could go either way, depending on how tightly you scope it.</div></div>
+      <div class="fit-row"><div class="fit-k">Overkill</div><div class="fit-v">There's already a correct answer you could just compute.</div></div>
+    </div>
+  </section>
+
+  <!-- 22 ROUND 1 -->
+  <section class="slide"
+    data-notes="Answer key. Copilot: strong fit — human reviews every suggestion, so non-determinism is cheap; latency is the tradeoff. Spam/moderation: strong fit — no clean rules, asymmetric error costs force a threshold. Chatbot: depends on execution — coverage vs liability, the Air Canada case; ask what guardrail would have caught it. Notetaker: depends on execution — you can't define 'correct,' the eval problem in miniature. Calculator: bad fit — deterministic answer; but an LLM that calls a calculator is good design. Traffic lights: bad, arguably dangerous — safety-critical, needs auditability; optimization over data is fine, a model deciding in real time is not.">
+    <div class="eyebrow">Round 1 · six products</div>
+    <div class="chips">
+      <span class="chip">GitHub Copilot</span>
+      <span class="chip">Spam &amp; content moderation</span>
+      <span class="chip">Customer support chatbot</span>
+      <span class="chip">AI meeting notetaker</span>
+      <span class="chip">LLM as a calculator</span>
+      <span class="chip">Traffic light timing</span>
+    </div>
+  </section>
+
+  <!-- 23 REPORT OUT -->
+  <section class="slide"
+    data-notes="Draw the spectrum on the board and place products as groups report. Spend the time on the chatbot and the notetaker, where disagreement clusters. When a group can't agree on fit, it's because the fit turns on a design decision nobody has made — naming that decision is the skill.">
+    <div class="eyebrow">Report out</div>
+    <h2 style="max-width:18ch;">Where did your group disagree?</h2>
+    <p class="big" style="max-width:30ch;">Disagreement usually means the fit depends on a decision nobody has made yet.</p>
+  </section>
+
+  <!-- 24 ROUND 2 -->
+  <section class="slide"
+    data-notes="Say the bad-fits line out loud, or every group will produce a strong-fit idea. This rolls into next week's discovery brief.">
+    <div class="eyebrow">Round 2 · your own</div>
+    <div class="stack">
+      <div><span class="item-title">Propose a product idea of your own.</span></div>
+      <div><span class="item-title">Spend two minutes on whether AI fits it.</span></div>
+      <div><span class="item-desc" style="font-size:clamp(1.05rem,1.8vw,1.45rem);">"Bad fit" is a fine answer — as long as you can say why.</span></div>
+    </div>
+  </section>
+
+  <!-- 25 BEFORE WEEK 2 -->
+  <section class="slide"
+    data-notes="Close with the onboarding check: confirm everyone can reach the shared doc, has a path to API access, and knows Modules 0–3 are due by Week 3.">
+    <div class="eyebrow">Before Week 2</div>
+    <div class="twohalf">
+      <div class="half">
+        <h3>Read</h3>
+        <p>Sculley et al., <em>Hidden Technical Debt in ML Systems</em> (2015)</p>
+        <p>Yan, <em>Patterns for Building LLM-based Systems and Products</em> (2023)</p>
+        <p>Optional: Karpathy, <em>Software Is Changing (Again)</em> (2025)</p>
+      </div>
+      <div class="half">
+        <h3>Do</h3>
+        <p>Start the onboarding modules.</p>
+        <p>Week 2 deliverable: a discovery brief with an explicit AI-fit assessment.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 26 CLOSING -->
+  <section class="slide closing"
+    data-notes="Take remaining questions. Point them to the site for everything covered today.">
+    <div class="eyebrow">Questions</div>
+    <h1>See you next week.</h1>
+    <div class="url">mse203.com</div>
+  </section>
+
+</div>
+
+<div class="chrome">
+  <span class="counter"><span id="cur">1</span> / <span id="total">26</span></span>
+  <span class="hint">← → or space to move · N for notes · F fullscreen</span>
+</div>
+
+<div class="notes" id="notes">
+  <div class="nlabel">Speaker notes</div>
+  <div id="notesBody"></div>
+</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total = slides.length;
+  let i = 0;
+  const cur = document.getElementById('cur');
+  const progress = document.getElementById('progress');
+  const notes = document.getElementById('notes');
+  const notesBody = document.getElementById('notesBody');
+  const notesToggle = document.getElementById('notesToggle');
+  let notesOpen = false;
+  document.getElementById('total').textContent = total;
+
+  function render(){
+    slides.forEach((s,n)=>s.classList.toggle('active', n===i));
+    cur.textContent = i+1;
+    progress.style.width = ((i+1)/total*100)+'%';
+    notesBody.textContent = slides[i].dataset.notes || '—';
+  }
+  function go(n){ i = Math.max(0, Math.min(total-1, n)); render(); }
+  function next(){ go(i+1); }
+  function prev(){ go(i-1); }
+
+  document.addEventListener('keydown', e=>{
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){ e.preventDefault(); next(); }
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){ e.preventDefault(); prev(); }
+    else if(e.key==='Home'){ go(0); }
+    else if(e.key==='End'){ go(total-1); }
+    else if(e.key.toLowerCase()==='n'){ toggleNotes(); }
+    else if(e.key.toLowerCase()==='f'){ toggleFs(); }
+  });
+  function toggleNotes(){ notesOpen=!notesOpen; notes.classList.toggle('show',notesOpen); }
+  notesToggle.addEventListener('click', toggleNotes);
+  function toggleFs(){
+    if(!document.fullscreenElement){ document.documentElement.requestFullscreen?.(); }
+    else{ document.exitFullscreen?.(); }
+  }
+  // click right half = next, left half = prev
+  document.getElementById('deck').addEventListener('click', e=>{
+    if(e.clientX > window.innerWidth*0.5) next(); else prev();
+  });
+  render();
+</script>
+</body>
+</html>
